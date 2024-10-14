@@ -33,16 +33,16 @@ const router = createRouter({
       component: RegisterLayout,
     },
     {
-      path: '/user',
+      path: '/users',
       component: MainLayout,
       children: [
         {
-          path: '/user',
+          path: '/users',
           name: 'User',
           component: User,
         },
         {
-          path: '/user/form/:id?',
+          path: '/users/form/:id?',
           name: 'UserForm',
           component: UserForm,
         }

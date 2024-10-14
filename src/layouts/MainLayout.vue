@@ -10,6 +10,7 @@ import Swal from 'sweetalert2'
 const router = useRouter()
 const activeUrl = ref('/')
 const route = useRoute()
+import defaultAvatar from '@/assets/img/avatars/avatar.jpg'
 
 watch(() => route.path, (value) => {
   activeUrl.value = value
@@ -147,10 +148,10 @@ const logout = () => {
             </li>
 
             <!-- User -->
-            <li :class="{'active': activeUrl === '/user'}" class="menu-item">
-              <RouterLink to="/user" class="menu-link">
+            <li :class="{'active': activeUrl === '/users'}" class="menu-item">
+              <RouterLink to="/users" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-user"></i>
-                <div data-i18n="Analytics">User</div>
+                <div data-i18n="Analytics">Users</div>
               </RouterLink>
             </li>
 
@@ -190,7 +191,7 @@ const logout = () => {
                       </div>
                       <div class="flex-shrink-0">
                         <div class="avatar avatar-online">
-                          <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                          <img :src="store.userProfile?.image || defaultAvatar" alt class="w-px-40 h-auto rounded-circle" />
                         </div>
                       </div>
                     </div>
