@@ -1,18 +1,63 @@
 <script lang="ts" setup>
 import '../assets/vendor/css/pages/page-auth.css';
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ref } from 'vue'
+import axiosApi from '@/utils/axios-api';
+import Swal from 'sweetalert2'
+const router = useRouter()
 
 const passwordVisible = ref(false)
 const loginModel = ref({
-    name: '',
     email: '',
     password: '',
 })
 
-const register = (event: Event) => {
+const errors = ref({
+    email: '',
+    password: '',
+})
+
+const login = async (event: Event) => {
     event.preventDefault()
-    console.log(loginModel.value)
+
+    errors.value = {
+        email: '',
+        password: '',
+    }
+
+    try {
+        const {data, errors} = await axiosApi.post('http://localhost:8000/api/login', loginModel.value)
+        const { statusCode, message } = data        
+
+        if (statusCode === 200) {
+            localStorage.setItem('token', data.data.token)
+            localStorage.setItem('user', JSON.stringify(data.data.user))
+            Swal.fire({
+                title: 'Success!',
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                router.push('/')
+            })
+        }
+    } catch (error) {
+        if (error.response && error.response.data && error.response.data.errors) {
+            // Populate errors object with backend validation errors
+            Object.keys(error.response.data.errors).forEach(key => {
+                if (key in errors.value) {
+                    errors.value[key] = error.response.data.errors[key][0]
+                }
+            })            
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: error.response.data.message || 'An error occurred',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            })
+        }
+    }
 }
 
 </script>
@@ -79,24 +124,30 @@ const register = (event: Event) => {
                         </div>
                         <!-- /Logo -->
                         <h4 class="mb-2">Welcome to Sneat! 👋</h4>
-                        <p class="mb-4">Please sign-in to your account and start the adventure</p>
+                        <p class="mb-4">Please login to your account and start the adventure</p>
 
-                        <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+                        <div id="formAuthentication" class="mb-3">
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email or Username</label>
-                                <input type="text" class="form-control" id="email" name="email-username"
+                                <label for="email" class="form-label">Email</label>
+                                <input type="text" class="form-control" :class="{ 'is-invalid': errors.email }" 
+                                id="email" name="email-username" v-model="loginModel.email"
                                     placeholder="Enter your email" autofocus />
+                                <div v-if="errors.email" class="invalid-feedback d-block">{{ errors.email }}</div>
                             </div>
                             <div class="mb-3 form-password-toggle">
                                 <div class="d-flex justify-content-between">
                                     <label class="form-label" for="password">Password</label>
                                 </div>
                                 <div class="input-group input-group-merge">
-                                    <input type="password" id="password" class="form-control" name="password"
+                                    <input :type="passwordVisible ? 'text' : 'password'" :class="{ 'is-invalid': errors.password }"
+                                    id="password" class="form-control" name="password" v-model="loginModel.password"
                                         placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                         aria-describedby="password" />
-                                    <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                    <span class="input-group-text cursor-pointer" @click="passwordVisible = !passwordVisible">
+                                        <i :class="passwordVisible ? 'bx bx-show' : 'bx bx-hide'"></i>
+                                    </span>
                                 </div>
+                                <div v-if="errors.password" class="invalid-feedback d-block">{{ errors.password }}</div>
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
@@ -105,9 +156,9 @@ const register = (event: Event) => {
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">Login</button>
+                                <button class="btn btn-primary d-grid w-100" @click="login">Login</button>
                             </div>
-                        </form>
+                        </div>
 
                         <p class="text-center">
                             <span>New on our platform? </span>
@@ -115,7 +166,6 @@ const register = (event: Event) => {
                         </p>
                     </div>
                 </div>
-                <!-- /Register -->
             </div>
         </div>
     </div>

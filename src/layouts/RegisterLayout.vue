@@ -1,7 +1,10 @@
 <script lang="ts" setup>
 import '../assets/vendor/css/pages/page-auth.css';
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ref } from 'vue'
+import axiosApi from '@/utils/axios-api';
+import Swal from 'sweetalert2'
+const router = useRouter()
 
 const passwordVisible = ref(false)
 const registerModel = ref({
@@ -10,9 +13,55 @@ const registerModel = ref({
     password: '',
 })
 
-const register = (event: Event) => {
+const errors = ref({
+    name: '',
+    email: '',
+    password: '',
+})
+
+const register = async (event: Event) => {
     event.preventDefault()
-    console.log(registerModel.value)
+
+    errors.value = {
+        name: '',
+        email: '',
+        password: '',
+    }
+
+    try {
+        const {data, errors} = await axiosApi.post('http://localhost:8000/api/register', registerModel.value)
+        const { statusCode, message } = data        
+
+        if (statusCode === 201) {
+            localStorage.setItem('token', data.data.token)
+            localStorage.setItem('user', JSON.stringify(data.data.user))
+            Swal.fire({
+                title: 'Success!',
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                router.push('/')
+            })
+        }
+    } catch (error) {
+        if (error.response && error.response.data && error.response.data.errors) {
+            // Populate errors object with backend validation errors
+            Object.keys(error.response.data.errors).forEach(key => {
+                if (key in errors.value) {
+                    errors.value[key] = error.response.data.errors[key][0]
+                }
+            })            
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: error.response.data.message || 'An error occurred',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            })
+        }
+
+    }
 }
 
 </script>
@@ -79,23 +128,25 @@ const register = (event: Event) => {
                         </div>
                         <!-- /Logo -->
                         <h4 class="mb-2">Adventure starts here 🚀</h4>
-                        <p class="mb-4">Make your app management easy and fun!</p>
+                        <p class="mb-4">Make your user management easy and fun!</p>
 
                         <div id="formAuthentication" class="mb-3">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
-                                <input type="text" class="form-control" id="name" name="name" v-model="registerModel.name"
+                                <input type="text" class="form-control" id="name" name="name" v-model="registerModel.name" :class="{ 'is-invalid': errors.name }"
                                     placeholder="Enter your name" autofocus />
+                                <div v-if="errors.name" class="invalid-feedback d-block">{{ errors.name }}</div>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="text" class="form-control" id="email" name="email" v-model="registerModel.email"
+                                <input type="text" class="form-control" id="email" name="email" v-model="registerModel.email" :class="{ 'is-invalid': errors.email }"
                                     placeholder="Enter your email" />
+                                <div v-if="errors.email" class="invalid-feedback d-block">{{ errors.email }}</div>
                             </div>
                             <div class="mb-3 form-password-toggle">
                                 <label class="form-label" for="password">Password</label>
                                 <div class="input-group input-group-merge">
-                                    <input :type="passwordVisible ? 'text' : 'password'" v-model="registerModel.password"
+                                    <input :type="passwordVisible ? 'text' : 'password'" v-model="registerModel.password" :class="{ 'is-invalid': errors.password }"
                                     id="password" class="form-control" name="password"
                                         placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                         aria-describedby="password" />
@@ -104,6 +155,7 @@ const register = (event: Event) => {
                                         </i>
                                     </span>
                                 </div>
+                                <div v-if="errors.password" class="invalid-feedback d-block">{{ errors.password }}</div>
                             </div>
 
                             <div class="mb-3">
