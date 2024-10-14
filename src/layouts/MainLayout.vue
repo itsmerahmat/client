@@ -21,6 +21,7 @@ onMounted(() => {
   if (!store.isLogged()) {
     router.push('/login')
   }
+  activeUrl.value = route.path
 });
 
 const logout = () => {

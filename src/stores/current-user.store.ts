@@ -32,6 +32,13 @@ export const useCurrentUserStore = defineStore('currentUser', () => {
     localStorage.removeItem('user')
   }
 
+  const isAdmin = computed(() => {
+    if (userProfile.value && userProfile.value.role === 'admin') {
+      return true
+    }
+    return false
+  })
+
   const destroyToken = () => {
     accessToken.value = null
     localStorage.removeItem('accessToken')
@@ -40,6 +47,7 @@ export const useCurrentUserStore = defineStore('currentUser', () => {
   return {
     userProfile,
     accessToken,
+    isAdmin,
     setTokenAndUser,
     revokeToken,
     isLogged,
