@@ -2,38 +2,35 @@ import { defineStore } from 'pinia'
 import { computed, ref, type Ref } from 'vue'
 
 export const useCurrentUserStore = defineStore('currentUser', () => {
-  const accessToken: Ref<string | null> = ref(localStorage.getItem('accessToken'))
+  const accessToken: Ref<string | null> = ref(localStorage.getItem('token'))
+  const user: Ref<any> = ref(localStorage.getItem('user'))
 
   const isLogged = (): Boolean => {
-    // if (refreshToken.value !== null) {
-    //   const expiry = JSON.parse(atob(refreshToken.value.split('.')[1])).exp
-    //   return Math.floor(new Date().getTime() / 1000) < expiry
-    // } else if (refreshToken.value == '') {
-    //   return false
-    // }
+    if (accessToken.value) {
+      return true
+    }
     return false
   }
 
-  const setAccessToken = (token: string) => {
+  const setTokenAndUser = (token: string, user: any) => {
     accessToken.value = token
-    localStorage.setItem('accessToken', token)
-  }
-
-  const setToken = (newAccessToken: string) => {
-    accessToken.value = newAccessToken
-    localStorage.setItem('accessToken', newAccessToken)
+    user.value = user
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(user))
   }
 
   const userProfile = computed((): any => {
-    // if (accessToken.value) {
-    //   const token = accessToken.value
-    //   return jwtDecode<UserProfile>(token)
-    // } else if (refreshToken.value) {
-    //   const token = refreshToken.value
-    //   return jwtDecode<{ userProfile: UserProfile }>(token).userProfile
-    // }
+    if (user.value) {
+      return JSON.parse(user.value)
+    }
     return null
   })
+
+  const revokeToken = () => {
+    accessToken.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  }
 
   const destroyToken = () => {
     accessToken.value = null
@@ -43,8 +40,8 @@ export const useCurrentUserStore = defineStore('currentUser', () => {
   return {
     userProfile,
     accessToken,
-    setAccessToken,
-    setToken,
+    setTokenAndUser,
+    revokeToken,
     isLogged,
     destroyToken,
   }

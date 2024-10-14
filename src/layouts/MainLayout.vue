@@ -1,20 +1,67 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import {useCurrentUserStore} from '@/stores/current-user.store'
+import { ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+const store = useCurrentUserStore()
+import axiosApi from '@/utils/axios-api'
 const showDropdown = ref(false)
-
+import Swal from 'sweetalert2'
+const router = useRouter()
 const activeUrl = ref('/')
-// dapatkan url saat ini dengan useRoute()
 const route = useRoute()
-
-// set activeUrl dengan route.path
-// activeUrl.value = route.path
 
 watch(() => route.path, (value) => {
   activeUrl.value = value
 })
 
+// sebelum halaman dimuat cek dulu apakah user sudah login
+onMounted(() => {
+  if (!store.isLogged()) {
+    router.push('/login')
+  }
+});
+
+const logout = () => {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You will be logged out',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, logout',
+    cancelButtonText: 'No, cancel'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const { data } =  await axiosApi.post('http://localhost:8000/api/logout')
+        const { message, statusCode } = data
+        
+        if (statusCode === 200) {
+          Swal.fire({
+            title: 'Success!',
+            text: message,
+            icon: 'success',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            store.revokeToken();
+            router.push('/login')
+          })
+        }
+
+      } catch (error) {
+        Swal.fire({
+          title: 'Error!',
+          text: error.response.data.message || 'An error occurred',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        })
+      }
+    } else {
+      showDropdown.value = false
+    }
+  })
+}
+    
 </script>
 <template>
     <div class="layout-wrapper layout-content-navbar">
@@ -138,8 +185,8 @@ watch(() => route.path, (value) => {
                     </div> -->
                     <div class="d-flex">
                       <div class="flex-grow-1 me-3">
-                        <span class="fw-semibold d-block">John Doe</span>
-                        <small class="text-muted">Admin</small>
+                        <span class="fw-semibold d-block">{{ store.userProfile?.name }}</span>
+                        <small class="text-muted">{{ store.userProfile?.email }}</small>
                       </div>
                       <div class="flex-shrink-0">
                         <div class="avatar avatar-online">
@@ -151,7 +198,7 @@ watch(() => route.path, (value) => {
                   <!-- <ul class="dropdown-menu dropdown-menu-end"> -->
                   <ul :class="{'show': showDropdown}" class="dropdown-menu dropdown-menu-end">
                     <li>
-                      <a class="dropdown-item" href="auth-login-basic.html">
+                      <a class="dropdown-item" @click="logout">
                         <i class="bx bx-power-off me-2"></i>
                         <span class="align-middle">Log Out</span>
                       </a>

@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import '../assets/vendor/css/pages/page-auth.css';
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { ref } from 'vue'
-import axiosApi from '@/utils/axios-api';
+import {useCurrentUserStore} from '@/stores/current-user.store'
+import { ref, onMounted } from 'vue'
+import axiosApi from '@/utils/axios-api'
 import Swal from 'sweetalert2'
 const router = useRouter()
+const store = useCurrentUserStore()
 
 const passwordVisible = ref(false)
 const loginModel = ref({
@@ -16,6 +18,13 @@ const errors = ref({
     email: '',
     password: '',
 })
+
+// sebelum halaman dimuat cek apakah user sudah login atau belum
+onMounted(() => {
+  if (store.isLogged()) {
+    router.push('/')
+  }
+});
 
 const login = async (event: Event) => {
     event.preventDefault()
