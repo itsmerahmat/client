@@ -35,7 +35,7 @@ const logout = () => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const { data } =  await axiosApi.post('http://localhost:8000/api/logout')
+        const { data } =  await axiosApi.post('https://api.sobatwisuda.com/public/api/logout')
         const { message, statusCode } = data
         
         if (statusCode === 200) {

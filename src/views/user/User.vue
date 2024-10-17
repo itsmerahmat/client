@@ -35,7 +35,7 @@ const headers: Header[] = [
 const fetchData = async () => {
   loading.value = true
   try {
-    const response = await axiosApi.get('http://localhost:8000/api/users', {
+    const response = await axiosApi.get('https://api.sobatwisuda.com/public/api/users', {
       params: {
         page: serverOptions.page,
         rowsPerPage: serverOptions.rowsPerPage,
@@ -80,7 +80,7 @@ const deleteUser = (id: number) => {
     cancelButtonText: 'Cancel',
   }).then((result) => {
     if (result.isConfirmed) {
-      axiosApi.delete(`http://localhost:8000/api/users/${id}`)
+      axiosApi.delete(`https://api.sobatwisuda.com/public/api/users/${id}`)
         .then(({ data }) => {
           Swal.fire({
             title: 'Success!',

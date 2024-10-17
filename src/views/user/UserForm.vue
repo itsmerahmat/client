@@ -35,7 +35,7 @@ onMounted(() => {
 
     if (params.id) {
         // fetch data user
-        axiosApi.get(`http://localhost:8000/api/users/${params.id}`)
+        axiosApi.get(`https://api.sobatwisuda.com/public/api/users/${params.id}`)
             .then(({ data }) => {
                 usersModel.value = data.data
             })
@@ -81,9 +81,9 @@ const save = async (event: Event) => {
         if (params.id) {
             // You should send POST and set _method to PATCH
             formData.append('_method', 'PUT');
-            response = await axiosApi.post(`http://localhost:8000/api/users/${params.id}`, formData);
+            response = await axiosApi.post(`https://api.sobatwisuda.com/public/api/users/${params.id}`, formData);
         } else {
-            response = await axiosApi.post('http://localhost:8000/api/users', formData);
+            response = await axiosApi.post('https://api.sobatwisuda.com/public/api/users', formData);
         }
 
         const { statusCode, message } = response.data;

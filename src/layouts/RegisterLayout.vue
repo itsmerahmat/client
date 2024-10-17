@@ -39,7 +39,7 @@ const register = async (event: Event) => {
     }
 
     try {
-        const {data, errors} = await axiosApi.post('http://localhost:8000/api/register', registerModel.value)
+        const {data, errors} = await axiosApi.post('https://api.sobatwisuda.com/public/api/register', registerModel.value)
         const { statusCode, message } = data        
 
         if (statusCode === 201) {

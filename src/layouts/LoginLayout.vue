@@ -35,7 +35,7 @@ const login = async (event: Event) => {
     }
 
     try {
-        const {data, errors} = await axiosApi.post('http://localhost:8000/api/login', loginModel.value)
+        const {data, errors} = await axiosApi.post('https://api.sobatwisuda.com/public/api/login', loginModel.value)
         const { statusCode, message } = data        
 
         if (statusCode === 200) {
